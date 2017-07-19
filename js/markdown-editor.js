@@ -2,9 +2,6 @@
 
 var markdownEditor = {
     applicationId: "5fc58006-b25f-4eaf-8f30-527c6fa7e5f5",
-    defaultFileName: "MD file.md",
-    microsoftGraphApiRoot: "https://graph.microsoft.com/v1.0/",
-    editorControl: null,
 
     /************ Open *************/
 
@@ -25,6 +22,7 @@ var markdownEditor = {
                 queryParameters: "select=*,name,size",
                 /* Request a read-write scope for the access token */
                 scopes: ["Files.ReadWrite"],
+                /* Optional: Use a custom redirect URI so that we don't reload the application during auth */ 
                 redirectUri: editor.generateRedirectUri("/redirect.html")
             },
             success: function (files) {
@@ -54,7 +52,7 @@ var markdownEditor = {
                 editor.setEditorBody(xhr.responseText);
                 editor.setFilename(fileItem.name);
                 editor.openFileID = fileItem.id;
-                $("#canvas").attr("disabled", false);
+                editor.setEditorStatus(true);
             }, 
             error: function(xhr, status, err) {
                 editor.showError(err);
@@ -85,6 +83,7 @@ var markdownEditor = {
             advanced: {
                 // Request additional parameters when we save the file
                 queryParameters: "select=id,name,parentReference",
+                /* Optional: Use a custom redirect URI so that we don't reload the application during auth */ 
                 redirectUri: editor.generateRedirectUri("/redirect.html")
             },
             success: function (selection) {
@@ -313,7 +312,7 @@ var markdownEditor = {
         this.lastSelectedFile = null;
 		this.openFileID = "";
         this.setFilename(this.defaultFileName);
-        $("#canvas").attr("disabled", false);
+        
         this.setEditorBody("");
     },
 
@@ -335,6 +334,15 @@ var markdownEditor = {
         }
         else {
             $("#canvas").val(text);
+        }
+    },
+
+    setEditorStatus: function (enabled) {
+        if (markdownEditor.editorControl != null) {
+            
+        }
+        else {
+            $("#canvas").attr("disabled", !enabled);
         }
     },
 
@@ -380,17 +388,15 @@ var markdownEditor = {
     // The access_token returned from the picker so we can make API calls again.
     accessToken: null,
 
-    user: {
-        id: "nouser@contoso.com",
-        domain: "organizations"
-    },
-
     /* Generates a custom redirect URI for the current hostname, port, and with the relative path provided */
     generateRedirectUri: function(relativePath) {
         var a = document.createElement('a');
         a.href = relativePath;
         return a.cloneNode(false).href;
-    }
+    },
+    defaultFileName: "MD file.md",
+    microsoftGraphApiRoot: "https://graph.microsoft.com/v1.0/",
+    editorControl: null
 }
 
-$("#canvas").attr("disabled", true);
+markdownEditor.setEditorStatus(false);

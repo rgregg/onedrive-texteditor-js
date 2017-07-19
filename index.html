@@ -76,6 +76,7 @@
       markdownEditor.wireUpCommandButton($("#renameFileCommand")[0], "rename");
       markdownEditor.wireUpCommandButton($("#shareFileCommand")[0], "share");
       markdownEditor.editorControl = new SimpleMDE({ element: document.getElementById("canvas") });
+      markdownEditor.createNewFile();
     })
   </script>
 
