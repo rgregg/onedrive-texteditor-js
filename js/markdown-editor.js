@@ -4,6 +4,7 @@ var markdownEditor = {
     applicationId: "5fc58006-b25f-4eaf-8f30-527c6fa7e5f5",
     defaultFileName: "MD file.md",
     microsoftGraphApiRoot: "https://graph.microsoft.com/v1.0/",
+    editorControl: null,
 
     /************ Open *************/
 
@@ -23,7 +24,8 @@ var markdownEditor = {
                 /* Request a few additional properties */
                 queryParameters: "select=*,name,size",
                 /* Request a read-write scope for the access token */
-                scopes: ["Files.ReadWrite"]
+                scopes: ["Files.ReadWrite"],
+                redirectUri: editor.generateRedirectUri("/redirect.html")
             },
             success: function (files) {
                 // Update our state to remember how we can use the API to write back to this file.
@@ -48,12 +50,11 @@ var markdownEditor = {
         // Use JQuery AJAX to download the file
         $.ajax(downloadLink, {
             success: function (data, status, xhr) {
-                
                 // load the file into the editor
                 editor.setEditorBody(xhr.responseText);
                 editor.setFilename(fileItem.name);
-                $("#canvas").attr("disabled", false);
                 editor.openFileID = fileItem.id;
+                $("#canvas").attr("disabled", false);
             }, 
             error: function(xhr, status, err) {
                 editor.showError(err);
@@ -83,7 +84,8 @@ var markdownEditor = {
             action: "query",
             advanced: {
                 // Request additional parameters when we save the file
-                queryParameters: "select=id,name,parentReference"
+                queryParameters: "select=id,name,parentReference",
+                redirectUri: editor.generateRedirectUri("/redirect.html")
             },
             success: function (selection) {
                 // The return here is the folder where we need to upload the item
@@ -150,7 +152,12 @@ var markdownEditor = {
         // using some values that we stored from the picker when we opened the item.
         var url = editor.generateGraphUrl(editor.lastSelectedFile, (state && state.uploadIntoParentFolder) ? true : false, "/content");
 
-        var bodyContent = $("#canvas").val().replace(/\r\n|\r|\n/g, "\r\n");
+        var bodyContent = "";
+        if (editor.editorControl != null) {
+            bodyContent = editor.editorControl.value();
+        } else {
+            bodyContent = $("#canvas").val().replace(/\r\n|\r|\n/g, "\r\n");
+        }
 
         // Call the REST API to PUT the text value to the contents of the file.
         $.ajax(url, {
@@ -323,7 +330,12 @@ var markdownEditor = {
 
     // Set the contents of the editor to a new value.
     setEditorBody: function (text) {
-        $("#canvas").val(text);
+        if (markdownEditor.editorControl != null) {
+            markdownEditor.editorControl.value(text);
+        }
+        else {
+            $("#canvas").val(text);
+        }
     },
 
     // State and function to connect elements in the HTML page to actions in the markdown editor.
@@ -371,6 +383,13 @@ var markdownEditor = {
     user: {
         id: "nouser@contoso.com",
         domain: "organizations"
+    },
+
+    /* Generates a custom redirect URI for the current hostname, port, and with the relative path provided */
+    generateRedirectUri: function(relativePath) {
+        var a = document.createElement('a');
+        a.href = relativePath;
+        return a.cloneNode(false).href;
     }
 }
 
