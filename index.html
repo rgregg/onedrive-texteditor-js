@@ -24,6 +24,20 @@
       window.location.protocol = "https";
     }
 
+    // This method is called when the "Open" button is clicked
+    function openNewFileAction()
+    {
+      var options = { 
+        clientId: "GUID HERE",
+        action: "download",
+        success: function(files) {
+          var selectedFile = files.value[0];
+          markdownEditor.openItemInEditor(selectedFile);
+        }
+      };
+      OneDrive.open(options);
+    }
+
   </script>
 
   <!-- Office Fabric UI NavBar -->
@@ -36,7 +50,7 @@
       </li>
       <li class="ms-NavBar-item">
         <!-- Open Button to invoke the open picker -->
-        <a class="ms-NavBar-link" href="#" id="openFileCommand"><i class="ms-Icon ms-Icon--folder"></i> Open</a>
+        <a class="ms-NavBar-link" href="#" id="openFileCommand" onclick="openNewFileAction()"><i class="ms-Icon ms-Icon--folder"></i> Open</a>
       </li>
       <li class="ms-NavBar-item">
         <!-- Save button to save back without invoking the picker -->
@@ -72,7 +86,7 @@
   <script type="text/javascript">
     $(document).ready(function () {
       markdownEditor.wireUpCommandButton($("#newFileCommand")[0], "new");
-      markdownEditor.wireUpCommandButton($("#openFileCommand")[0], "open");
+      //markdownEditor.wireUpCommandButton($("#openFileCommand")[0], "open");
       markdownEditor.wireUpCommandButton($("#saveFileCommand")[0], "save");
       markdownEditor.wireUpCommandButton($("#saveAsFileCommand")[0], "saveAs");
       markdownEditor.wireUpCommandButton($("#renameFileCommand")[0], "rename");
